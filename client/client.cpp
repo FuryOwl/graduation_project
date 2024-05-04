@@ -51,8 +51,7 @@ void initializeSSL() {
     OpenSSL_add_ssl_algorithms();
 }
 
-void cleanupSSL(SSL_CTX* ctx) {  // Принимаем ctx как аргумент
-    SSL_CTX_free(ctx);  // Освобождаем контекст SSL
+void cleanupSSL() {  // Принимаем ctx как аргумент
     EVP_cleanup();  // Очищаем все дайджесты, шифры и другие алгоритмы
     ERR_free_strings();  // Освобождаем все строки ошибок
     CRYPTO_cleanup_all_ex_data();  // Очищаем все данные ex_data
@@ -190,7 +189,7 @@ int main(int argc, char* argv[]) {
     if (!ssl) {
         std::cerr << "Failed to connect to the server with SSL." << std::endl;
         SSL_CTX_free(ctx);
-        cleanupSSL(ctx);
+        cleanupSSL();
         cleanupNetwork();
         return 1;
     }
@@ -233,7 +232,7 @@ int main(int argc, char* argv[]) {
     SSL_free(ssl);
     closeSocket(SSL_get_fd(ssl));
     SSL_CTX_free(ctx);
-    cleanupSSL(ctx);
+    cleanupSSL();
     cleanupNetwork();
 
     return 0;
