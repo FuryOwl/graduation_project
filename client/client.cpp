@@ -38,6 +38,14 @@ void cleanupNetwork() {
 #endif
 }
 
+void closeSocket(int sock) {
+#ifdef _WIN32
+    closesocket(sock);
+#else
+    close(sock);
+#endif
+}
+
 void initializeSSL() {
     SSL_load_error_strings();
     OpenSSL_add_ssl_algorithms();
@@ -63,7 +71,7 @@ SSL_CTX* createSSLContext() {
 }
 
 SSL* connectToServerWithSSL(const char* hostname, int port, SSL_CTX* ctx) {
-    struct addrinfo hints, * res, * p;
+    struct addrinfo hints{}, *res, *p;
     int sock = -1;
 
     memset(&hints, 0, sizeof(hints));
@@ -76,7 +84,7 @@ SSL* connectToServerWithSSL(const char* hostname, int port, SSL_CTX* ctx) {
         return nullptr;
     }
 
-    for (p = res; p != NULL; p = p->ai_next) {
+    for (p = res; p != nullptr; p = p->ai_next) {
         sock = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (sock == -1) {
             perror("Cannot create socket");
@@ -85,7 +93,7 @@ SSL* connectToServerWithSSL(const char* hostname, int port, SSL_CTX* ctx) {
 
         if (connect(sock, p->ai_addr, p->ai_addrlen) == -1) {
             perror("Connection error");
-            closesocket(sock);
+            closeSocket(sock);
             continue;
         }
 
@@ -95,12 +103,12 @@ SSL* connectToServerWithSSL(const char* hostname, int port, SSL_CTX* ctx) {
             std::cerr << "SSL_connect failed." << std::endl;
             ERR_print_errors_fp(stderr);
             SSL_free(ssl);
-            closesocket(sock);
+            closeSocket(sock);
             continue;
         }
 
         freeaddrinfo(res);
-        return ssl; // Возвращаем объект SSL, установленный и готовый к работе
+        return ssl;
     }
 
     freeaddrinfo(res);
@@ -198,6 +206,7 @@ int main(int argc, char* argv[]) {
     }
     else {
         std::cout << "Data sent successfully: " << bytes_sent << " bytes." << std::endl;
+
         // Чтение ответа от сервера
         char response[1024];
         int bytes_received = SSL_read(ssl, response, sizeof(response) - 1);
@@ -220,20 +229,9 @@ int main(int argc, char* argv[]) {
         }
     }
 
-
-#ifdef _WIN32
-    Sleep(2000); // Delay for 2 seconds
-#else
-    sleep(2); // Delay for 2 seconds
-#endif
-
     SSL_shutdown(ssl);
     SSL_free(ssl);
-#ifdef _WIN32
-
-#else
-    close(client_socket);
-#endif
+    closeSocket(SSL_get_fd(ssl));
     SSL_CTX_free(ctx);
     cleanupSSL(ctx);
     cleanupNetwork();
