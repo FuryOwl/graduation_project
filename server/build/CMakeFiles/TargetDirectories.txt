@@ -1,3 +1,0 @@
-E:/Учеба/РГСУ/ВКР/sources/server/build/CMakeFiles/server.dir
-E:/Учеба/РГСУ/ВКР/sources/server/build/CMakeFiles/ALL_BUILD.dir
-E:/Учеба/РГСУ/ВКР/sources/server/build/CMakeFiles/ZERO_CHECK.dir
