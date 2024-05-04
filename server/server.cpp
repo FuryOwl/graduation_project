@@ -105,8 +105,8 @@ SSL_CTX* createSSLContext() {
         exit(EXIT_FAILURE);
     }
 
-    if (SSL_CTX_use_certificate_file(ctx, "E:/Projects/cpp_projects/Project3/x64/Release/server.crt", SSL_FILETYPE_PEM) <= 0 ||
-        SSL_CTX_use_PrivateKey_file(ctx, "E:/Projects/cpp_projects/Project3/x64/Release/private.key", SSL_FILETYPE_PEM) <= 0) {
+    if (SSL_CTX_use_certificate_file(ctx, "server.crt", SSL_FILETYPE_PEM) <= 0 ||
+        SSL_CTX_use_PrivateKey_file(ctx, "private.key", SSL_FILETYPE_PEM) <= 0) {
         std::cout << "POINT" << std::endl;
         ERR_print_errors_fp(stderr);
         std::cout << "POINT" << std::endl;
