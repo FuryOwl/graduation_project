@@ -58,6 +58,15 @@ void cleanupSSL() {  // Принимаем ctx как аргумент
     SSL_COMP_free_compression_methods();  // Освобождаем таблицу методов сжатия SSL/TLS
 }
 
+void printCipherInfo(SSL* ssl) {
+    const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl);
+    const char* cipher_name = SSL_CIPHER_get_name(cipher);
+    const char* cipher_description = SSL_CIPHER_description(cipher, nullptr, 0);
+
+    std::cout << "Cipher Name: " << cipher_name << std::endl;
+    std::cout << "Cipher Description: " << cipher_description << std::endl;
+}
+
 SSL_CTX* createSSLContext() {
     const SSL_METHOD* method = TLS_client_method();
     SSL_CTX* ctx = SSL_CTX_new(method);
@@ -123,6 +132,15 @@ void PrintHelp() {
     std::cout << "  -i, --ip        Server IP address." << std::endl;
     std::cout << "  -p, --port      Server port number." << std::endl;
     std::cout << "  -h, --help      Display this help message." << std::endl;
+}
+
+std::string sanitizeInput(const std::string& input) {
+    std::string output = input;
+    // Удаление потенциально опасных символов
+    output.erase(std::remove(output.begin(), output.end(), '\''), output.end());
+    output.erase(std::remove(output.begin(), output.end(), ';'), output.end());
+    output.erase(std::remove(output.begin(), output.end(), '"'), output.end());
+    return output;
 }
 
 std::string serializeDataToJson(const std::string& name, int mark) {
@@ -194,6 +212,12 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl);
+    const char* cipher_name = SSL_CIPHER_get_name(cipher);
+    std::cout << "Connected with " << SSL_get_version(ssl) << " encryption" << std::endl;
+    std::cout << "Cipher used: " << cipher_name << std::endl;
+    
+    
     std::string jsonData = serializeDataToJson(studentName, studentMark);
     std::cout << "Serialized JSON: " << jsonData << std::endl;
 

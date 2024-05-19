@@ -6,6 +6,16 @@ set(CMAKE_CXX_STANDARD 14)
 add_executable(server server.cpp sqlite3.h sqlite3.c)
 target_include_directories(server PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
+# Find Python libraries
+find_package(PythonLibs REQUIRED)
+
+# Include directories for Python
+target_include_directories(server PRIVATE ${PYTHON_INCLUDE_DIRS})
+
+# Link Python libraries
+target_link_libraries(server PRIVATE ${PYTHON_LIBRARIES})
+
+# Configuration for OpenSSL and additional system libraries
 if(WIN32)
     set(OPENSSL_ROOT_DIR "C:/Program Files/OpenSSL-Win64")
     set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT_DIR}/include")

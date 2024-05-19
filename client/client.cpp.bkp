@@ -251,3 +251,169 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
+/*
+#include <iostream>
+#include <string>
+#include "nlohmann/json.hpp"
+#include <locale>
+#include <cstring> // For memset
+
+#ifdef _WIN32 // Compilation for Windows
+#include "getopt_win32.h" // Alternative implementation getopt() for Windows
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+#else // Compilation for UNIX
+#include <unistd.h>
+#include <getopt.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#endif
+
+void PrintHelp() {
+    std::cout << "Usage: client.exe -s [Student Name] -m [Mark] -i [ServerIP] -p [ServerPort]" << std::endl;
+    std::cout << "Options:" << std::endl;
+    std::cout << "  -s, --student   Student's full name." << std::endl;
+    std::cout << "  -m, --mark      Student's mark (0-100)." << std::endl;
+    std::cout << "  -i, --ip        Server IP address." << std::endl;
+    std::cout << "  -p, --port      Server port number." << std::endl;
+    std::cout << "  -h, --help      Display this help message." << std::endl;
+}
+
+std::string serializeDataToJson(const std::string& name, int mark) {
+    nlohmann::json jsonData;
+    jsonData["name"] = name;
+    jsonData["mark"] = mark;
+    return jsonData.dump();
+}
+
+int main(int argc, char* argv[]) {
+    setlocale(LC_ALL, "");
+
+    std::string studentName, server_ip, server_port;
+    int studentMark = -1;
+
+    const option long_options[] = {
+        { "student",    required_argument,  nullptr,    's' },
+        { "mark",       required_argument,  nullptr,    'm' },
+        { "ip",         required_argument,  nullptr,    'i' },
+        { "port",       required_argument,  nullptr,    'p' },
+        { "help",       no_argument,        nullptr,    'h' },
+        { nullptr,      0,                  nullptr,     0  }
+    };
+
+    int opt;
+    while ((opt = getopt_long(argc, argv, "s:m:i:p:h", long_options, nullptr)) != -1) {
+        switch (opt) {
+        case 's':
+            studentName = optarg;
+            break;
+        case 'm':
+            studentMark = std::stoi(optarg);
+            if (studentMark < 0 || studentMark > 100) {
+                std::cerr << "Error: Mark must be between 0 and 100." << std::endl;
+                return 1;
+            }
+            break;
+        case 'i':
+            server_ip = optarg;
+            break;
+        case 'p':
+            server_port = optarg;
+            break;
+        case 'h':
+            PrintHelp();
+            return 0;
+        default:
+            std::cerr << "Invalid option or missing argument. Use -h for help." << std::endl;
+            return 1;
+        }
+    }
+
+    if (studentName.empty() || studentMark == -1 || server_ip.empty() || server_port.empty()) {
+        std::cerr << "Error: All parameters are required." << std::endl;
+        PrintHelp();
+        return 1;
+    }
+
+    std::string jsonData = serializeDataToJson(studentName, studentMark);
+    std::cout << "Serialized JSON: " << jsonData << std::endl;
+
+    // Set up network and send jsonData to the server
+#ifdef _WIN32 // Initialization for Windows
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        std::cerr << "Failed to initialize winsock" << std::endl;
+        return 1;
+    }
+#endif
+
+    // Creating a socket
+    int client_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (client_socket == -1) {
+        std::cerr << "Failed to create socket" << std::endl;
+#ifdef _WIN32
+        WSACleanup();
+#endif
+        return 1;
+    }
+
+    // Setting up the server details
+    sockaddr_in server_address{};
+    server_address.sin_family = AF_INET;
+    server_address.sin_port = htons(std::stoi(server_port));
+    server_address.sin_addr.s_addr = inet_addr(server_ip.c_str());
+    if (server_address.sin_addr.s_addr == INADDR_NONE) {
+        std::cerr << "Invalid address or address not supported" << std::endl;
+#ifdef _WIN32
+        closesocket(client_socket);
+        WSACleanup();
+#else
+        close(client_socket);
+#endif
+        return 1;
+    }
+
+    // Connecting to the server
+    if (connect(client_socket, reinterpret_cast<sockaddr*>(&server_address), sizeof(server_address)) < 0) {
+        std::cerr << "Failed to connect to the server" << std::endl;
+#ifdef _WIN32
+        closesocket(client_socket);
+        WSACleanup();
+#else
+        close(client_socket);
+#endif
+        return 1;
+    }
+
+    // Sending the JSON string to the server
+    if (send(client_socket, jsonData.c_str(), jsonData.size(), 0) < 0) {
+        std::cerr << "Failed to send data to the server" << std::endl;
+#ifdef _WIN32
+        closesocket(client_socket);
+        WSACleanup();
+#else
+        close(client_socket);
+#endif
+        return 1;
+    }
+
+#ifdef _WIN32
+    Sleep(2000); // Delay for 2 seconds
+#else
+    sleep(2); // Delay for 2 seconds
+#endif
+
+    // Closing the connection
+#ifdef _WIN32
+    closesocket(client_socket);
+    WSACleanup();
+#else
+    close(client_socket);
+#endif
+
+    return 0;
+}
+*/
